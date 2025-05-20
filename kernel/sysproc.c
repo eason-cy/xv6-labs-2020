@@ -6,7 +6,8 @@
 #include "memlayout.h"
 #include "spinlock.h"
 #include "proc.h"
-
+int kama_sigalarm(int ticks, void(*handler));
+int kama_sigreturn();
 uint64
 sys_exit(void)
 {
@@ -57,7 +58,7 @@ sys_sleep(void)
 {
   int n;
   uint ticks0;
-
+  kama_backtrace();
   if(argint(0, &n) < 0)
     return -1;
   acquire(&tickslock);
@@ -94,4 +95,17 @@ sys_uptime(void)
   xticks = ticks;
   release(&tickslock);
   return xticks;
+}
+uint64 sys_sigalarm(void) {
+  int n;
+  uint64 fn;
+  if(argint(0,&n) < 0)
+  return -1;
+  if(argaddr(1, &fn) < 0)
+  return -1;
+  return kama_sigalarm(n,(void(*)())(fn));
+}
+
+uint64 sys_sigreturn(void) {
+  return kama_sigreturn();
 }
