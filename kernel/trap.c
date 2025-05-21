@@ -5,7 +5,8 @@
 #include "spinlock.h"
 #include "proc.h"
 #include "defs.h"
-
+int kama_uvmcheckcowpage(uint64 va);
+int kama_uvmcowcopy(uint64 va);
 struct spinlock tickslock;
 uint ticks;
 
@@ -67,6 +68,10 @@ usertrap(void)
     syscall();
   } else if((which_dev = devintr()) != 0){
     // ok
+  } else if((r_scause() == 13 || r_scause() == 15) && kama_uvmcheckcowpage(r_stval())) {
+    //发生页面错误，并且检测出是写时复制机制导致的页面不可写,则执行写时复制
+    if(kama_uvmcowcopy(r_stval()) == -1)
+      p->killed = 1;
   } else {
     printf("usertrap(): unexpected scause %p pid=%d\n", r_scause(), p->pid);
     printf("            sepc=%p stval=%p\n", r_sepc(), r_stval());
