@@ -27,8 +27,8 @@
 #define BUFMAP_HASH(dev,blockno) ((((dev)<<27)|(blockno))%NBUFMAP_BUCKET)
 struct {
   struct buf buf[NBUF];
-  struct buf bufmap[NBUFMAP_BUCKET];
   struct spinlock eviction_lock;
+  struct buf bufmap[NBUFMAP_BUCKET];
   struct spinlock bufmap_locks[NBUFMAP_BUCKET];
   // Linked list of all buffers, through prev/next.
   // Sorted by how recently the buffer was used.
